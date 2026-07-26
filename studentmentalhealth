@@ -1,0 +1,473 @@
+###############################################################
+# STUDENT MENTAL HEALTH ANALYSIS
+# Exploratory Data Analysis (EDA) using R
+###############################################################
+
+###############################################################
+# STEP 1: Install Required Libraries (Run only once)
+###############################################################
+
+# install.packages("ggplot2")   # For advanced data visualization
+# install.packages("dplyr")     # For data manipulation
+# install.packages("corrplot")  # For correlation heatmap (used later)
+# install.packages("rpart")       # Package for Decision Tree model
+# install.packages("rpart.plot")  # Package to visualize the Decision Tree
+# install.packages("caTools")   # For splitting dataset
+# install.packages("pROC")      # For ROC Curve
+
+###############################################################
+# STEP 2: Clear Workspace
+###############################################################
+
+rm(list = ls())
+
+###############################################################
+# STEP 3: Load Required Libraries
+###############################################################
+
+library(ggplot2)
+library(dplyr)
+library(caTools)
+library(rpart)
+library(rpart.plot)
+
+
+###############################################################
+# STEP 4: Import Dataset
+###############################################################
+
+data <- read.csv("Student Mental health.csv")
+
+###############################################################
+# STEP 5: Explore Dataset
+###############################################################
+
+# Display column names
+names(data)
+
+# Display first 6 rows
+head(data)
+
+# Open dataset in spreadsheet format
+View(data)
+
+# Summary statistics
+summary(data)
+
+# Structure of dataset
+str(data)
+
+# Number of rows and columns
+dim(data)
+
+# ======================================================
+#  STEP 6: DATA EXPLORATION
+# ======================================================
+
+# Display the first 10 rows of the dataset
+head(data, 10)
+
+# Display the last 10 rows of the dataset
+tail(data, 10)
+
+# Check the class (data type) of each column
+sapply(data, class)
+
+# Count the number of observations in the dataset
+nrow(data)
+
+# Count the number of variables (columns)
+ncol(data)
+
+# Display the column names
+colnames(data)
+
+# Display the row names
+rownames(data)
+
+# ======================================================
+#   STEP 7:CHECKING MISSING VALUES
+# ======================================================
+
+# Count missing values in each column
+colSums(is.na(data))
+
+# Count total missing values in the dataset
+sum(is.na(data))
+
+# ======================================================
+# STEP 8:CHECKING DUPLICATES
+# ======================================================
+
+# Count duplicate rows
+sum(duplicated(data))
+
+# Remove duplicate rows (optional)
+data <- distinct(data)
+
+# ======================================================
+# STEP 9:SUMMARY STATISTICS
+# ======================================================
+
+# Generate descriptive statistics
+summary(data)
+
+# Display statistical summary for numeric columns
+summary(select_if(data, is.numeric))
+
+# ======================================================
+# STEP 10:FREQUENCY TABLES
+# ======================================================
+
+# Frequency of Gender
+table(data$Choose.your.gender)
+
+# Frequency of Age
+table(data$Age)
+
+# Frequency of Course
+table(data$What.is.your.course.)
+
+# Calculate the average (mean) age of students
+mean(data$Age, na.rm = TRUE)
+
+# Find the middle value (median) of the Age column
+median(data$Age, na.rm = TRUE)
+
+# Calculate the standard deviation to measure the spread of Age values
+sd(data$Age, na.rm = TRUE)
+
+# Calculate the variance of the Age column
+var(data$Age, na.rm = TRUE)
+
+# Find the minimum and maximum Age values
+range(data$Age, na.rm = TRUE)
+
+# Find the minimum age
+min(data$Age, na.rm = TRUE)
+
+# Find the maximum age
+max(data$Age, na.rm = TRUE)
+
+# Find the first quartile, median, and third quartile
+quantile(data$Age, na.rm = TRUE)
+
+###############################################################
+# step 11: Data visualization
+###############################################################
+
+###############################################################
+# GRAPH 1: Age Distribution by Gender (Violin Plot)
+###############################################################
+
+ggplot(data,
+       aes(x = Choose.your.gender,
+           y = Age,
+           fill = Choose.your.gender)) +
+  geom_violin() +
+  labs(
+    title = "Age Distribution by Gender",
+    x = "Gender",
+    y = "Age"
+  ) +
+  theme_minimal()
+
+###############################################################
+# GRAPH 2: Gender Distribution
+###############################################################
+
+ggplot(data, aes(x = Age)) +
+  geom_density(fill = "lightgreen", alpha = 0.5) +
+  labs(title = "Density Plot of Age",
+       x = "Age",
+       y = "Density") +
+  theme_minimal()
+
+###############################################################
+# GRAPH 3: Depression Status by Gender (Stacked Bar Chart)
+###############################################################
+
+ggplot(data,
+       aes(x = Choose.your.gender,
+           fill = Do.you.have.Depression.)) +
+  geom_bar() +
+  labs(
+    title = "Depression Status by Gender",
+    x = "Gender",
+    y = "Number of Students"
+  ) +
+  theme_minimal()
+
+###############################################################
+# GRAPH 4: Year of Study
+###############################################################
+
+barplot(table(data$Your.current.year.of.Study),
+        main = "Year of Study",
+        xlab = "Year",
+        ylab = "Number of Students",
+        col = "darkblue")
+
+###############################################################
+# GRAPH 5: Anxiety Distribution
+###############################################################
+
+ggplot(data, aes(x = Choose.your.gender,
+                 y = Age,
+                 fill = Choose.your.gender)) +
+  geom_boxplot() +
+  labs(title = "Age by Gender",
+       x = "Gender",
+       y = "Age") +
+  theme_minimal()
+
+###############################################################
+# GRAPH 6: Course Distribution
+###############################################################
+
+barplot(table(data$What.is.your.course.),
+        main = "Course Distribution",
+        xlab = "Course",
+        ylab = "Number of Students",
+        col = rainbow(length(unique(data$What.is.your.course.))),
+        las = 2)
+
+###############################################################
+# GRAPH 7: CGPA Distribution
+###############################################################
+
+barplot(table(data$What.is.your.CGPA.),
+        main = "CGPA Distribution",
+        xlab = "CGPA Range",
+        ylab = "Number of Students",
+        col = "gold",
+        las = 2)
+
+###############################################################
+# GRAPH 8: Marital Status Distribution
+###############################################################
+
+ggplot(data, aes(x = Marital.status, fill = Marital.status)) +
+  geom_bar() +
+  labs(
+    title = "Distribution of Marital Status",
+    x = "Marital Status",
+    y = "Number of Students"
+  ) +
+  theme_minimal()
+
+
+###############################################################
+# GRAPH 9: Specialist Treatment
+###############################################################
+
+pie(table(data$Did.you.seek.any.specialist.for.a.treatment.),
+    main = "Students Seeking Specialist Treatment",
+    col = c("orange", "skyblue"),
+    cex = 1.3,          # Increase label size
+    cex.main = 1.5,     # Increase title size
+    radius = 1)       # Increase pie size
+
+###############################################################
+# GRAPH 10: Depression vs Anxiety
+###############################################################
+
+ggplot(data,
+       aes(x = Do.you.have.Anxiety.,
+           fill = Do.you.have.Depression.)) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Depression vs Anxiety",
+    x = "Anxiety",
+    y = "Number of Students",
+    fill = "Depression"
+  ) +
+  theme_minimal()
+
+###############################################################
+# step 12:DATA PREPROCESSING
+###############################################################
+
+###############################################################
+#  Remove Missing Values
+###############################################################
+
+data<- na.omit(data)
+
+###############################################################
+#  Remove Duplicate Rows
+###############################################################
+
+data <- unique(data)
+
+###############################################################
+#  Convert Character Columns to Factors
+###############################################################
+
+data$Choose.your.gender <- as.factor(data$Choose.your.gender)
+data$What.is.your.course. <- as.factor(data$What.is.your.course.)
+data$Your.current.year.of.Study <- as.factor(data$Your.current.year.of.Study)
+data$What.is.your.CGPA. <- as.factor(data$What.is.your.CGPA.)
+data$Marital.status <- as.factor(data$Marital.status)
+data$Do.you.have.Depression. <- as.factor(data$Do.you.have.Depression.)
+data$Do.you.have.Anxiety. <- as.factor(data$Do.you.have.Anxiety.)
+data$Do.you.have.Panic.attack. <- as.factor(data$Do.you.have.Panic.attack.)
+data$Did.you.seek.any.specialist.for.a.treatment. <- as.factor(data$Did.you.seek.any.specialist.for.a.treatment.)
+
+###############################################################
+# Check Data Types of All Columns
+###############################################################
+sapply(data, class)
+
+###############################################################
+# DATA PREPROCESSING COMPLETED
+###############################################################
+
+#saves your cleaned dataset as a new CSV file.
+write.csv(data,
+          "Student_Mental_Health_Cleaned.csv",
+          row.names = FALSE) 
+
+###############################################################
+# STEP 13: Split the Dataset into Training and Testing Sets
+###############################################################
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Split the data (70% training, 30% testing)
+split <- sample.split(data$Do.you.have.Depression., SplitRatio = 0.7)
+
+# Create training dataset
+train <- subset(data, split == TRUE)
+
+# Create testing dataset
+test <- subset(data, split == FALSE)
+
+# Check the number of rows
+nrow(train)
+nrow(test)
+
+###############################################################
+# MACHINE LEARNING USING DECISION TREE
+###############################################################
+
+###############################################################
+# STEP 14: Train the Decision Tree Model
+###############################################################
+
+# Build the Decision Tree model using the training dataset
+model <- rpart(
+  Do.you.have.Depression. ~
+    Age +
+    Choose.your.gender +
+    Your.current.year.of.Study +
+    What.is.your.CGPA. +
+    Marital.status +
+    Do.you.have.Anxiety. +
+    Do.you.have.Panic.attack.,
+  data = train,
+  method = "class",
+  control = rpart.control(maxdepth = 5, cp = 0.005)
+)
+
+###############################################################
+# STEP 15A: Display Decision Tree Summary
+###############################################################
+
+summary(model)
+
+###############################################################
+# STEP 15B: Display the Decision Tree
+###############################################################
+
+# Display the Decision Tree graph
+rpart.plot(
+  model,
+  type = 2,
+  extra = 104,
+  fallen.leaves = TRUE,
+  cex = 0.8
+)
+
+###############################################################
+# STEP 16: Predict on the Test Dataset
+###############################################################
+
+# Predict depression status for the test dataset
+prediction <- predict(
+  model,
+  newdata = test,
+  type = "class"
+)
+
+###############################################################
+# STEP 17: Create Confusion Matrix
+###############################################################
+
+# Compare actual and predicted values
+confusion <- table(
+  Actual = test$Do.you.have.Depression.,
+  Predicted = prediction
+)
+
+# Display the confusion matrix
+confusion
+
+###############################################################
+# STEP 18: Calculate Model Accuracy
+###############################################################
+
+# Calculate the accuracy of the Decision Tree model
+accuracy <- sum(diag(confusion)) / sum(confusion)
+
+# Display the accuracy
+accuracy
+
+# Display accuracy as a percentage
+accuracy * 100
+
+###############################################################
+# STEP 19: Display Variable Importance
+###############################################################
+
+# Display the importance of each predictor variable
+model$variable.importance
+
+###############################################################
+# STEP 20: Save Decision Tree Plot
+###############################################################
+#used png() to save the Decision Tree visualization as a PNG image file.
+png("Decision_Tree.png", width = 1200, height = 900)
+rpart.plot(
+  model,
+  type = 2,
+  extra = 104,
+  fallen.leaves = TRUE,
+  cex = 0.8
+)
+dev.off()
+#dev.off() closes the graphics device and completes the image file
+
+###############################################################
+# DECISION TREE MODEL COMPLETED
+###############################################################
+
+cat("\n=====================================\n")
+cat("FINAL PROJECT SUMMARY\n")
+cat("=====================================\n")
+
+###############################################################
+# STEP 21: Conclusion
+###############################################################
+
+cat("=========================================\n")
+cat(" STUDENT MENTAL HEALTH ANALYSIS COMPLETED\n")
+cat("=========================================\n\n")
+
+cat("Decision Tree Model Accuracy :",
+    round(accuracy * 100, 2), "%\n")
+
+cat("The Decision Tree model was successfully built using the training dataset.\n")
+cat("The model predicts whether a student is likely to have depression based on factors such as Age, Gender, Year of Study, CGPA, Marital Status, Anxiety, and Panic Attack.\n")
+cat("The project demonstrates the use of Exploratory Data Analysis (EDA) and Machine Learning for analyzing student mental health.\n")
